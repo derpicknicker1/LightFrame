@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>LightFrame</title>
+	<link rel="shortcut icon" href="favicon.ico">
+	<link rel="stylesheet" href="css/colorpicker.css" type="text/css" />
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+	<script src="http://code.jquery.com/jquery-2.2.0.min.js"></script>
+	<script type="text/javascript" src="js/colorpicker.js"></script>
+	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+	<script>
+		var currCol1 = "#000000";
+		var currCol2 = "#000000";
+		var servAddr = "http://192.168.178.34/ajax";
+		var initLayout1=function(){
+			var hash=window.location.hash.replace('#','');
+			currCol1 = '#f0d643';
+			$('#colorSelector').ColorPicker({
+				color:'#f0d643',
+				onShow:function(c){
+					$(c).fadeIn(500);
+					return false;
+				},
+				onHide:function(c){
+					$(c).fadeOut(500);
+					setCol(currCol1);
+					return false;
+				},   
+				onChange:function(hsb,hex,rgb){
+					$('#colorSelector span').css('backgroundColor','#'+hex);
+					currCol1 = hex;
+				}
+			});
+		};
+		EYE.register(initLayout1,'init');
+		var initLayout2=function(){
+			var hash=window.location.hash.replace('#','');
+			currCol2 = '#f0d643';
+			$('#colorSelector2').ColorPicker({
+				color:'#f0d643',
+				onShow:function(c){
+					$(c).fadeIn(500);
+					return false;
+				},
+				onHide:function(c){
+					$(c).fadeOut(500);
+					setCol2(currCol2);
+					return false;
+				},   
+				onChange:function(hsb,hex,rgb){
+					$('#colorSelector2 span').css('backgroundColor','#'+hex);
+					currCol2 = hex;
+				}
+			});
+		};
+		EYE.register(initLayout2,'init');
+		function showTime2(){	
+				$.post( servAddr, { subTime: "true" });
+		};
+		function showTime(){
+			var color = currCol2;
+			if (color.search("rgb") == -1){
+				var col = HexToRGB(color);
+				$.post( servAddr, { subTime: "true", r: col.r, g:col.g, b:col.b });
+			}
+			else{
+				var hex = [color.r.toString(16), color.g.toString(16), color.b.toString(16)];
+				$.post( servAddr, { subTime: "true", r: color[0], g:color[1], b:color[2] });
+			}
+		};
+		HexToRGB = function(hex) {
+			var hex = parseInt(((hex.indexOf('#') > -1) ? hex.substring(1) : hex), 16);
+			return {
+				r: hex >> 16,
+				g: (hex & 0x00FF00) >> 8,
+				b: (hex & 0x0000FF)
+			};
+	       	};
+	       	function setCol2(color){
+			$('#colorSelector2 span').css('backgroundColor',color);
+			$('#colorSelector2').ColorPickerSetColor(color);
+		}	
+		function setCol(color){
+			$('#colorSelector span').css('backgroundColor',color);
+			$('#colorSelector').ColorPickerSetColor(color);
+			if (color.search("rgb") == -1){
+				var col = HexToRGB(color);
+				$.post( servAddr, { subCol: "true", r: col.r, g:col.g, b:col.b });
+			}
+			else{
+				var hex = [color.r.toString(16), color.g.toString(16), color.b.toString(16)];
+				$.post( servAddr, { subCol: "true", r: color[0], g:color[1], b:color[2] });
+			}
+		};
+		$(document).on("swiperight",function(e){
+			if($.mobile.activePage.jqmData("panel")!=="open"){
+				$("#panel-overlay").panel("open");
+				$("#panel-overlay-lay").panel("open");
+			}
+		});
+		$(document).on("pagecreate",function(){
+			$("#col-w").on("click",function(){setCol('#FFFFFF' );});
+			$("#col-r").on("click",function(){setCol('#FF0000' );});
+			$("#col-g").on("click",function(){setCol('#00FF00' );});
+			$("#col-b").on("click",function(){setCol('#0000FF' );});
+			$("#col-off").on("click",function(){setCol('#000000' );});	
+		});
+	</script>
+</head>
+<body>
+
+<div data-role="page" id="Basics" data-theme="b">
+	<div data-role="header" data-position="fixed">
+		<div style="text-align:center;"><h1 style="margin-top:0px;margin-bottom:0px;"><img border="0" src="./sys_img/icon.png" alt="Logo" style="width:24px;height:24px;display:inline"/> LightFrame</h1></div>
+		<a href="#panel-overlay" class="ui-btn ui-corner-all ui-shadow ui-icon-bars ui-btn-icon-left ">Men&uuml;</a>
+	</div>
+
+	<div class="ui-content" role="main">
+		<div data-role="collapsibleset" >
+			<div data-role="collapsible" >
+				<h4>Farben</h4>
+				<div class="ui-field-contain">
+				
+				<fieldset data-role="controlgroup" data-type="horizontal"  id="colButGr">
+					<legend>Farbe:</legend>
+					<button class="ui-btn ui-corner-all ui-shadow ui-icon-power ui-btn-icon-left" id="col-off" style="color:gray;">Aus</button>
+					<button class="ui-btn ui-corner-all ui-shadow " id="col-w">Wei&szlig;</button>
+					<button class="ui-btn ui-corner-all ui-shadow " id="col-r" style="color:red;">Rot</button>
+					<button class="ui-btn ui-corner-all ui-shadow " id="col-g" style="color:green;">Gr&uuml;n</button>
+					<button class="ui-btn ui-corner-all ui-shadow " id="col-b" style="color:blue;">Blau</button>
+					<a href="#" class="ui-btn ui-corner-all ui-shadow " id="colorSelector"  style="height:43px;"><span style="background-color: #f0d643"></span></a>
+				</fieldset>			
+				</div>
+
+				<div class="ui-field-contain">
+					<label for="sliderCol">Helligkeit:</label>
+					<input type="range" name="sliderCol" id="sliderCol" value="128" min="0" max="255" data-highlight="true">
+				</div>
+			</div>
+
+			<div data-role="collapsible" >
+				<h4>Zeit</h4>
+				<div class="ui-field-contain">
+					<fieldset data-role="controlgroup" data-type="horizontal"  id="colButGr">
+						<legend>Farbe:</legend>
+						<a href="#" class="ui-btn ui-corner-all ui-shadow " id="colorSelector2"  style="height:43px;"><span style="background-color: #f0d643"></span></a>
+						<button class="ui-btn ui-corner-all ui-shadow ui-icon-clock ui-btn-icon-left" onclick="showTime()">Zeige Zeit</button>
+					</fieldset>
+				</div>	
+				
+
+			</div>
+
+		</div>
+	</div>
+
+	<div data-role="panel" id="panel-overlay" data-display="overlay">
+		<ul data-role="listview">
+			<li data-icon="delete"><a href="#" data-rel="close">Schlie&szlig;en</a></li>
+			<li><a href="#Basics">Basics</a></li>
+			<li><a href="#Animation">Animation</a></li>
+			<li><a href="#">Bilder</a></li>
+			<li><a href="#">Dia-Show</a></li>
+		</ul>
+		<br><br>
+		<button class="ui-btn ui-corner-all ui-shadow ui-icon-clock ui-btn-icon-left" onclick="showTime2()">Zeit</button>
+		<button class="ui-btn ui-corner-all ui-shadow ui-icon-power ui-btn-icon-left" onclick="setCol('#000000')" >Aus</button>
+	</div>
+</div>
+
+<div data-role="page" id="Animation" data-theme="b">
+	<div data-role="header" data-position="fixed">
+		<div style="text-align:center;"><h1 style="margin-top:0px;margin-bottom:0px;"><img border="0" src="./sys_img/icon.png" alt="Logo" style="width:24px;height:24px;display:inline"/> LightFrame</h1></div>
+		<a href="#panel-overlay-lay" class="ui-btn ui-corner-all ui-shadow ui-icon-bullets ui-btn-icon-left ">Men&uuml;</a>
+	</div>
+
+	<div class="ui-content" role="main">
+		<div data-role="collapsibleset" >
+			<div data-role="collapsible">
+				<h3>Section 1</h3>
+			<p>I'm the collapsible content for section 1</p>
+			</div>
+			<div data-role="collapsible">
+				<h3>Section 2</h3>
+			<p>I'm the collapsible content for section 2</p>
+			</div>
+			<div data-role="collapsible">
+				<h3>Section 3</h3>
+			<p>I'm the collapsible content for section 3</p>
+			</div>
+		</div>
+	</div>
+	<!--<div data-role="footer" data-position="fixed">
+		<div data-role="navbar">
+			<ul>
+				<li><a href="#">Menu item 1</a></li>
+				<li><a href="#" class="ui-btn-active ui-state-persist">Menu item 2</a></li>
+				<li><a href="#">Menu item 3</a></li>
+			</ul>
+		</div>
+		<h4 style="display:none;">Footer</h4>
+	</div>-->
+	<div data-role="panel" id="panel-overlay-lay" data-display="overlay">
+		<ul data-role="listview">
+			<li data-icon="delete"><a href="#" data-rel="close">Schlie&szlig;en</a></li>
+			<li><a href="#Basics">Basics</a></li>
+			<li><a href="#Animation">Animation</a></li>
+			<li><a href="#">Bilder</a></li>
+			<li><a href="#">Dia-Show</a></li>
+		</ul>
+		<br><br>
+		<button class="ui-btn ui-corner-all ui-shadow ui-icon-clock ui-btn-icon-left" onclick="showTime2()">Zeit</button>
+		<button class="ui-btn ui-corner-all ui-shadow ui-icon-power ui-btn-icon-left" onclick="setCol('#000000')" >Aus</button>
+	</div>
+</div>
+</body>
+</html>
+
+	
